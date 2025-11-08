@@ -14,6 +14,8 @@ import {
   ChallengeIcon, SolutionIcon, OutcomeIcon, DownloadIcon, SpinnerIcon, PptIcon, SunIcon, MoonIcon
 } from './components/Icons';
 import { ServiceCard } from './components/ServiceCard';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import PptxGenJS from 'pptxgenjs';
 import { ThemeToggle } from './components/ThemeToggle';
 
@@ -124,7 +126,7 @@ const AnimatedBackground = () => (
         <div 
             className="constellation-bg absolute top-0 left-0 w-[4000px] h-[4000px] opacity-20 dark:opacity-40" 
             style={{ 
-                backgroundImage: 'url(https://d2v7i253673fsp.cloudfront.net/media/misc/constellation.png)',
+                backgroundImage: 'url(https://www.transparenttextures.com/patterns/stardust.png)',
                 animation: 'animated-constellation 200s linear infinite'
             }}
         />
@@ -224,6 +226,21 @@ const SlideWrapper: React.FC<{ children: React.ReactNode, isContentSlide?: boole
     </motion.div>
 );
 
+const imageUrlToBase64 = (url: string): Promise<string> => 
+    fetch(url)
+        .then(response => response.blob())
+        .then(blob => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                if (typeof reader.result === 'string') {
+                    resolve(reader.result);
+                } else {
+                    reject('FileReader result is not a string');
+                }
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        }));
 
 // --- Main Presentation Component ---
 const Presentation: React.FC = () => {
@@ -253,12 +270,12 @@ const Presentation: React.FC = () => {
   const slideData: SlideDef[] = React.useMemo(() => [
     {
       id: 1,
-      content: () => {
+      content: ({ images }: { images: Record<string, string> }) => {
         const title = "Architects of Leadership".split("");
         const subtitle = "Transforming the Future of Executive Talent".split("");
         return (
             <div className="relative h-full w-full overflow-hidden" data-hoverable onClick={() => navigate('/slide/2')}>
-              <div className="absolute inset-0 bg-cover bg-center animate-ken-burns" style={{ backgroundImage: `url('${presentationImages.slide1}')` }}></div>
+              <div className="absolute inset-0 bg-cover bg-center animate-ken-burns" style={{ backgroundImage: `url('${images.slide1}')` }}></div>
               <div className="absolute inset-0 dark:bg-black/60 light:bg-black/20"></div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
               <motion.div 
@@ -266,7 +283,11 @@ const Presentation: React.FC = () => {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.5 }}
                 className="absolute inset-0"
-                style={{backgroundImage: 'url(https://d2v7i253673fsp.cloudfront.net/media/misc/grid.svg)', backgroundSize: '100px auto', animation: 'fadeIn 2s ease-out'}}
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3cpath d='M0 100V0h100' fill='none' stroke-width='1' stroke='rgba(255,255,255,0.1)' /%3e%3c/svg%3e")`,
+                  backgroundSize: '100px 100px',
+                  animation: 'fadeIn 2s ease-out'
+                }}
               ></motion.div>
               <div className="relative h-full flex flex-col items-start justify-center text-left p-8 md:p-16 lg:p-24 z-10">
                 <div className="max-w-4xl">
@@ -298,7 +319,7 @@ const Presentation: React.FC = () => {
     },
     {
       id: 2,
-      content: () => (
+      content: ({ images }: { images: Record<string, string> }) => (
           <div className="flex flex-col lg:flex-row items-center justify-between h-full gap-16 w-full max-w-7xl">
             <motion.div className="lg:w-1/2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
               <h2 style={{ color: GOLD_ACCENT }} className="text-sm font-bold tracking-widest uppercase">About RexJagers</h2>
@@ -310,7 +331,7 @@ const Presentation: React.FC = () => {
               </div>
             </motion.div>
             <motion.div className="hidden lg:block lg:w-1/2 h-1/2 lg:h-[70%]" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.4 }}>
-              <img src={presentationImages.slide2} alt="Leadership strategy session" className="w-full h-full object-cover rounded-lg shadow-2xl" />
+              <img src={images.slide2} alt="Leadership strategy session" className="w-full h-full object-cover rounded-lg shadow-2xl" />
             </motion.div>
           </div>
         )
@@ -408,7 +429,7 @@ const Presentation: React.FC = () => {
     },
     {
       id: 8,
-      content: () => (
+      content: ({ images }: { images: Record<string, string> }) => (
           <div className="flex flex-col lg:flex-row items-center justify-between h-full gap-16 w-full max-w-7xl">
               <motion.div className="lg:w-1/2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
                 <h2 style={{ color: GOLD_ACCENT }} className="text-sm font-bold tracking-widest uppercase">The Partnership Proposition</h2>
@@ -429,7 +450,7 @@ const Presentation: React.FC = () => {
               </motion.div>
               <motion.div className="hidden lg:block lg:w-1/2 h-full" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.4 }}>
                   <div className="w-full h-full rounded-lg overflow-hidden shadow-2xl">
-                    <img src={presentationImages.slide8} alt="Strategic partnership meeting" className="w-full h-full object-cover" />
+                    <img src={images.slide8} alt="Strategic partnership meeting" className="w-full h-full object-cover" />
                   </div>
               </motion.div>
           </div>
@@ -437,7 +458,7 @@ const Presentation: React.FC = () => {
     },
     {
       id: 9,
-      content: () => (
+      content: ({ images }: { images: Record<string, string> }) => (
           <div className="flex flex-col lg:flex-row items-center justify-center h-full gap-16 w-full max-w-7xl">
             <motion.div className="lg:w-1/2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
               <h2 style={{ color: GOLD_ACCENT }} className="text-sm font-bold tracking-widest uppercase">Proven Track Record</h2>
@@ -468,7 +489,7 @@ const Presentation: React.FC = () => {
             </motion.div>
              <motion.div className="hidden lg:block lg:w-5/12 h-[70%]" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.4 }}>
               <div className="w-full h-full rounded-lg overflow-hidden shadow-2xl">
-                <img src={presentationImages.slide9} alt="Technology team achieving success" className="w-full h-full object-cover" />
+                <img src={images.slide9} alt="Technology team achieving success" className="w-full h-full object-cover" />
               </div>
             </motion.div>
           </div>
@@ -476,9 +497,9 @@ const Presentation: React.FC = () => {
     },
     {
       id: 10,
-      content: () => (
+      content: ({ images }: { images: Record<string, string> }) => (
           <div className="relative h-full w-full overflow-hidden">
-            <div className="absolute inset-0 bg-cover bg-center animate-ken-burns-out" style={{ backgroundImage: `url('${presentationImages.slide10}')` }}></div>
+            <div className="absolute inset-0 bg-cover bg-center animate-ken-burns-out" style={{ backgroundImage: `url('${images.slide10}')` }}></div>
             <div className="absolute inset-0 dark:bg-black/60 light:bg-background/40"></div>
             <div className="relative h-full flex flex-col items-center justify-center text-center p-8 z-10">
               <div className="flex flex-col items-center gap-6 dark:bg-black/20 light:bg-white/40 backdrop-blur-md p-12 rounded-lg border border-border shadow-lg dark:shadow-2xl max-w-4xl">
@@ -504,7 +525,7 @@ const Presentation: React.FC = () => {
           </div>
         )
     },
-  ], [presentationImages, navigate, theme]);
+  ], [navigate, theme]);
 
 
   const totalSlides = slideData.length;
@@ -525,6 +546,76 @@ const Presentation: React.FC = () => {
       navigate('/slide/1', { replace: true });
     }
   }, [slideId, totalSlides, navigate]);
+
+  const handleDownloadPDF = async () => {
+    setIsDownloading(true);
+    setDownloadProgress(0);
+    setDownloadMenuOpen(false);
+
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'px',
+      format: [1920, 1080],
+    });
+
+    const pdfContainer = document.createElement('div');
+    pdfContainer.style.position = 'absolute';
+    pdfContainer.style.left = '-9999px';
+    pdfContainer.style.width = '1920px';
+    pdfContainer.style.height = '1080px';
+    document.body.appendChild(pdfContainer);
+
+    const base64Images: Record<string, string> = {};
+    for (const key in presentationImages) {
+        base64Images[key] = await imageUrlToBase64(presentationImages[key]);
+    }
+
+    try {
+      for (let i = 0; i < slideData.length; i++) {
+        const slideDef = slideData[i];
+        setDownloadProgress(((i + 1) / slideData.length) * 100);
+
+        const SlideContent = slideDef.content as (props: any) => React.ReactNode;
+        
+        const elementToRender = (
+          <div className={theme}>
+            <div className="w-[1920px] h-[1080px] relative font-sans antialiased text-text-primary bg-background">
+              <AnimatedBackground />
+              <SlideWrapper isContentSlide={i > 0 && i < totalSlides - 1}>
+                <SlideContent images={base64Images} />
+              </SlideWrapper>
+            </div>
+          </div>
+        );
+
+        const root = createRoot(pdfContainer);
+        await new Promise<void>(resolve => {
+          root.render(elementToRender);
+          setTimeout(resolve, 1500);
+        });
+
+        const canvas = await html2canvas(pdfContainer, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: null,
+          width: 1920,
+          height: 1080
+        });
+        
+        root.unmount();
+        
+        if (i > 0) doc.addPage();
+        doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 1920, 1080);
+      }
+      doc.save('RexJagers_Presentation.pdf');
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+    } finally {
+      document.body.removeChild(pdfContainer);
+      setIsDownloading(false);
+      setDownloadProgress(0);
+    }
+  };
 
 
   // Fix: Replaced 'aistudio.useCallback' with 'React.useCallback'
@@ -581,10 +672,47 @@ const Presentation: React.FC = () => {
       <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
       <Navigation current={currentSlide} total={totalSlides} goTo={goTo} />
       
+      <div className="fixed bottom-6 right-6 z-50">
+        <div className="relative flex flex-col items-center">
+            <AnimatePresence>
+                {downloadMenuOpen && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        exit={{ opacity: 0, y: 10 }}
+                        className="flex flex-col gap-3 mb-3"
+                    >
+                        <button onClick={handleDownloadPDF} data-hoverable className="w-12 h-12 rounded-full flex items-center justify-center bg-surface-2 border border-border text-accent hover:bg-accent hover:text-background transition-colors" title="Download as PDF">
+                            <DownloadIcon />
+                        </button>
+                        <button onClick={() => alert('PPTX Download coming soon!')} data-hoverable className="w-12 h-12 rounded-full flex items-center justify-center bg-surface-2 border border-border text-accent hover:bg-accent hover:text-background transition-colors" title="Download as PPTX">
+                            <PptIcon />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            <button
+                onClick={() => setDownloadMenuOpen(!downloadMenuOpen)}
+                data-hoverable
+                className="w-14 h-14 rounded-full flex items-center justify-center bg-accent border border-accent/50 text-background shadow-lg hover:scale-105 transition-transform"
+                aria-label="Toggle download menu"
+            >
+                {isDownloading ? <SpinnerIcon /> : <DownloadIcon />}
+            </button>
+            <AnimatePresence>
+                {isDownloading && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute -bottom-6 text-xs text-accent">
+                        {Math.round(downloadProgress)}%
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+      </div>
+
       <AnimatePresence mode="wait">
         <SlideWrapper key={currentSlide} isContentSlide={currentSlide > 0 && currentSlide < totalSlides - 1}>
             {typeof currentSlideData.content === 'function' ? 
-              currentSlideData.content({}) : 
+              currentSlideData.content({ images: presentationImages }) : 
               currentSlideData.content
             }
         </SlideWrapper>
