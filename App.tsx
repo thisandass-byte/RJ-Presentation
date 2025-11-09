@@ -387,9 +387,9 @@ const Presentation: React.FC = () => {
                 <h2 className="text-4xl md:text-6xl font-bold mt-6 tracking-wide text-text-primary">Let’s Architect Your Future Leadership</h2>
                 <p className="mt-4 text-lg text-text-secondary tracking-wider max-w-2xl">Partner with RexJagers to build the visionary leadership your organization needs to thrive in the future.</p>
                 <div className="mt-8 flex flex-col md:flex-row items-center gap-4 md:gap-8 text-lg">
-                  <a href="mailto:connect@rexjagers.com" className="flex items-center gap-3 text-[var(--accent)] hover:text-[var(--accent-light)] transition-colors duration-300">
+                  <a href="mailto:contact@rexjagers.com" className="flex items-center gap-3 text-[var(--accent)] hover:text-[var(--accent-light)] transition-colors duration-300">
                     <EnvelopeIcon />
-                    <span className="tracking-wider">connect@rexjagers.com</span>
+                    <span className="tracking-wider">contact@rexjagers.com</span>
                   </a>
                   <span className="hidden md:block text-text-primary/20">|</span>
                   <a href="https://www.rexjagers.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-[var(--accent)] hover:text-[var(--accent-light)] transition-colors duration-300">
