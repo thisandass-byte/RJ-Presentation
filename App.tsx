@@ -1,6 +1,5 @@
 // Fix: Changed 'import React, aistudio from 'react'' to 'import React from 'react'' to correct the import syntax.
 import React from 'react';
-import { createRoot } from 'react-dom/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
 import { Logo } from './components/Logo';
@@ -9,15 +8,12 @@ import {
   IntelligenceIcon, PartnershipIcon, StrategyIcon, ConfidentialityIcon,
   EnvelopeIcon, GlobeIcon,
   DiscoveryIcon, SourcingIcon, AssessmentIcon, IntegrationIcon,
+  // Fix: Corrected typo in DiversityAdvocacyIcon import.
   PartnerLedIcon, DataInsightsIcon, TalentAccessIcon, CulturalPrecisionIcon, DiversityAdvocacyIcon,
   ElegantArrowIcon, 
-  ChallengeIcon, SolutionIcon, OutcomeIcon, DownloadIcon, SpinnerIcon, PptIcon, SunIcon, MoonIcon
+  ChallengeIcon, SolutionIcon, OutcomeIcon, LeftNavArrowIcon, RightNavArrowIcon
 } from './components/Icons';
 import { ServiceCard } from './components/ServiceCard';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import PptxGenJS from 'pptxgenjs';
-import { ThemeToggle } from './components/ThemeToggle';
 
 type SlideDef = {
   id: number;
@@ -26,105 +22,12 @@ type SlideDef = {
 
 const GOLD_ACCENT = 'var(--accent)';
 
-// --- Custom Hooks ---
-const useTheme = (): [string, () => void] => {
-  // Fix: Replaced 'aistudio.useState' with 'React.useState'
-  const [theme, setTheme] = React.useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') || 'dark';
-    }
-    return 'dark';
-  });
-
-  // Fix: Replaced 'aistudio.useCallback' with 'React.useCallback'
-  const toggleTheme = React.useCallback(() => {
-    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
-  }, []);
-
-  // Fix: Replaced 'aistudio.useEffect' with 'React.useEffect'
-  React.useEffect(() => {
-    const root = window.document.documentElement;
-    if (theme === 'light') {
-      root.classList.add('light');
-    } else {
-      root.classList.remove('light');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  return [theme, toggleTheme];
-};
-
-const useMousePosition = () => {
-    // Fix: Replaced 'aistudio.useState' with 'React.useState'
-    const [mousePosition, setMousePosition] = React.useState({ x: 0, y: 0 });
-
-    // Fix: Replaced 'aistudio.useEffect' with 'React.useEffect'
-    React.useEffect(() => {
-        const updateMousePosition = (ev: MouseEvent) => {
-            setMousePosition({ x: ev.clientX, y: ev.clientY });
-        };
-        window.addEventListener('mousemove', updateMousePosition);
-        return () => {
-            window.removeEventListener('mousemove', updateMousePosition);
-        };
-    }, []);
-
-    return mousePosition;
-};
-
 // --- UI Components ---
-
-const CustomCursor = () => {
-    const { x, y } = useMousePosition();
-    // Fix: Replaced 'aistudio.useRef' with 'React.useRef'
-    const dotRef = React.useRef<HTMLDivElement>(null);
-    // Fix: Replaced 'aistudio.useRef' with 'React.useRef'
-    const ringRef = React.useRef<HTMLDivElement>(null);
-    // Fix: Replaced 'aistudio.useState' with 'React.useState'
-    const [isHovering, setIsHovering] = React.useState(false);
-    
-    // Fix: Replaced 'aistudio.useEffect' with 'React.useEffect'
-    React.useEffect(() => {
-        const handleMouseEnter = () => setIsHovering(true);
-        const handleMouseLeave = () => setIsHovering(false);
-
-        document.querySelectorAll('a, button, [data-hoverable]').forEach(el => {
-            el.addEventListener('mouseenter', handleMouseEnter);
-            el.addEventListener('mouseleave', handleMouseLeave);
-        });
-        
-        return () => {
-            document.querySelectorAll('a, button, [data-hoverable]').forEach(el => {
-                el.removeEventListener('mouseenter', handleMouseEnter);
-                el.removeEventListener('mouseleave', handleMouseLeave);
-            });
-        };
-    }, []);
-
-    // Fix: Replaced 'aistudio.useEffect' with 'React.useEffect'
-    React.useEffect(() => {
-        if (dotRef.current) {
-            dotRef.current.style.transform = `translate(${x - 4}px, ${y - 4}px) scale(${isHovering ? 0.5 : 1})`;
-        }
-        if (ringRef.current) {
-            ringRef.current.style.transform = `translate(${x - 20}px, ${y - 20}px) scale(${isHovering ? 1.5 : 1})`;
-            ringRef.current.style.opacity = isHovering ? '0.5' : '1';
-        }
-    }, [x, y, isHovering]);
-
-    return (
-        <>
-            <div id="cursor-dot" ref={dotRef} />
-            <div id="cursor-ring" ref={ringRef} />
-        </>
-    );
-};
 
 const AnimatedBackground = () => (
     <div className="absolute inset-0 overflow-hidden z-[-1] bg-background">
         <div 
-            className="constellation-bg absolute top-0 left-0 w-[4000px] h-[4000px] opacity-20 dark:opacity-40" 
+            className="constellation-bg absolute top-0 left-0 w-[4000px] h-[4000px] opacity-40" 
             style={{ 
                 backgroundImage: 'url(https://www.transparenttextures.com/patterns/stardust.png)',
                 animation: 'animated-constellation 200s linear infinite'
@@ -135,9 +38,9 @@ const AnimatedBackground = () => (
 
 
 const Navigation: React.FC<{ current: number, total: number, goTo: (index: number) => void }> = ({ current, total, goTo }) => (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-black/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 backdrop-blur-md px-4 py-2 rounded-full border" style={{ backgroundColor: 'var(--nav-bg)', borderColor: 'var(--nav-border)'}}>
         {Array.from({ length: total }).map((_, i) => (
-            <button key={i} onClick={() => goTo(i)} data-hoverable className="w-2 h-2 rounded-full transition-colors duration-300" style={{ backgroundColor: current === i ? GOLD_ACCENT : 'rgba(255, 255, 255, 0.3)'}} />
+            <button key={i} onClick={() => goTo(i)} className="w-2 h-2 rounded-full transition-colors duration-300" style={{ backgroundColor: current === i ? GOLD_ACCENT : 'var(--nav-dot-inactive)'}} />
         ))}
     </div>
 );
@@ -187,6 +90,7 @@ const differentiators = [
    {icon: <DataInsightsIcon />, title: 'Data-Backed Insights', desc: 'Proprietary research and market intelligence.'},
    {icon: <TalentAccessIcon />, title: 'Exclusive Talent Access', desc: 'Network of top-tier passive leaders.'},
    {icon: <CulturalPrecisionIcon />, title: 'Cultural Precision', desc: 'Fit beyond credentials.'},
+   // Fix: Corrected typo in DiversityAdvocacyIcon component usage.
    {icon: <DiversityAdvocacyIcon />, title: 'Diversity Advocacy', desc: 'Inclusive, future-forward leadership.'}
 ];
 
@@ -226,22 +130,6 @@ const SlideWrapper: React.FC<{ children: React.ReactNode, isContentSlide?: boole
     </motion.div>
 );
 
-const imageUrlToBase64 = (url: string): Promise<string> => 
-    fetch(url)
-        .then(response => response.blob())
-        .then(blob => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                if (typeof reader.result === 'string') {
-                    resolve(reader.result);
-                } else {
-                    reject('FileReader result is not a string');
-                }
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        }));
-
 // --- Main Presentation Component ---
 const Presentation: React.FC = () => {
   const { slideId } = useParams<{ slideId: string }>();
@@ -249,13 +137,6 @@ const Presentation: React.FC = () => {
 
   // Fix: Replaced 'aistudio.useState' with 'React.useState'
   const [isWheeling, setIsWheeling] = React.useState(false);
-  // Fix: Replaced 'aistudio.useState' with 'React.useState'
-  const [isDownloading, setIsDownloading] = React.useState(false);
-  // Fix: Replaced 'aistudio.useState' with 'React.useState'
-  const [downloadProgress, setDownloadProgress] = React.useState(0);
-  // Fix: Replaced 'aistudio.useState' with 'React.useState'
-  const [downloadMenuOpen, setDownloadMenuOpen] = React.useState(false);
-  const [theme, toggleTheme] = useTheme();
 
   // Fix: Replaced 'aistudio.useMemo' with 'React.useMemo'
   const presentationImages = React.useMemo(() => ({
@@ -274,21 +155,22 @@ const Presentation: React.FC = () => {
         const title = "Architects of Leadership".split("");
         const subtitle = "Transforming the Future of Executive Talent".split("");
         return (
-            <div className="relative h-full w-full overflow-hidden" data-hoverable onClick={() => navigate('/slide/2')}>
-              <div className="absolute inset-0 bg-cover bg-center animate-ken-burns" style={{ backgroundImage: `url('${images.slide1}')` }}></div>
-              <div className="absolute inset-0 dark:bg-black/60 light:bg-black/20"></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 0.5 }}
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3cpath d='M0 100V0h100' fill='none' stroke-width='1' stroke='rgba(255,255,255,0.1)' /%3e%3c/svg%3e")`,
-                  backgroundSize: '100px 100px',
-                  animation: 'fadeIn 2s ease-out'
-                }}
-              ></motion.div>
+            <div className="relative h-full w-full overflow-hidden" onClick={() => navigate('/slide/2')}>
+              <div 
+                className="absolute inset-0 bg-cover bg-center animate-ken-burns" 
+                style={{ 
+                  backgroundImage: `url('${images.slide1}')`,
+                  filter: 'grayscale(40%) contrast(120%) brightness(80%)'
+                }} 
+              />
+              <div className="absolute inset-0" style={{
+                background: 'radial-gradient(ellipse at center, transparent 20%, rgba(10, 16, 31, 0.8) 80%, var(--background) 100%)'
+              }} />
+              <div className="absolute inset-0 opacity-5" style={{
+                backgroundImage: 'url(https://www.transparenttextures.com/patterns/subtle-noise.png)',
+                mixBlendMode: 'overlay'
+              }} />
+
               <div className="relative h-full flex flex-col items-start justify-center text-left p-8 md:p-16 lg:p-24 z-10">
                 <div className="max-w-4xl">
                   <Logo className="text-4xl md:text-5xl" />
@@ -301,9 +183,7 @@ const Presentation: React.FC = () => {
                   </h2>
                    <p className="text-xl md:text-2xl font-normal tracking-wider max-w-3xl mt-4" style={{ 
                        color: 'var(--accent-light)', 
-                       textShadow: theme === 'dark' 
-                           ? '0 2px 25px rgba(0,0,0,0.85)' 
-                           : '0 1px 10px rgba(0,0,0,0.3)' 
+                       textShadow: '0 2px 25px rgba(0,0,0,0.85)' 
                     }}>
                     {subtitle.map((char, index) => (
                       <motion.span key={index} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1 + index * 0.02 }}>
@@ -381,8 +261,8 @@ const Presentation: React.FC = () => {
           <div className="relative mt-12 w-full">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   {methodologySteps.map((item, index) => (
-                      <motion.div key={item.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }} data-hoverable className="bg-surface-2 backdrop-blur-md p-6 rounded-lg border border-border hover:border-accent transition-all duration-300 z-10 relative shadow-xl text-center">
-                        <div className="w-16 h-16 mx-auto mb-4 text-accent">{item.icon}</div>
+                      <motion.div key={item.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }} className="bg-surface-2 backdrop-blur-md p-6 rounded-lg border border-border hover:border-[var(--accent)] transition-all duration-300 z-10 relative shadow-xl text-center">
+                        <div className="w-16 h-16 mx-auto mb-4 text-[var(--accent)]">{item.icon}</div>
                         <h4 className="font-bold text-text-primary text-xl mt-1 tracking-wide">{item.title}</h4>
                         <p className="text-text-secondary mt-2 text-sm tracking-wider">{item.desc}</p>
                       </motion.div>
@@ -400,8 +280,8 @@ const Presentation: React.FC = () => {
           <h3 className="text-3xl md:text-5xl font-bold text-text-primary mt-2 tracking-wide">What Sets Us Apart</h3>
           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
              {differentiators.map((item, index) => (
-              <motion.div key={index} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }} data-hoverable className="bg-surface-2 backdrop-blur-md p-6 rounded-lg border border-border shadow-xl flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(204,164,59,0.2)]">
-                  <div className="w-16 h-16 mb-4 text-accent">{item.icon}</div>
+              <motion.div key={index} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }} className="bg-surface-2 backdrop-blur-md p-6 rounded-lg border border-border shadow-xl flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(var(--accent-rgb),0.2)]">
+                  <div className="w-16 h-16 mb-4 text-[var(--accent)]">{item.icon}</div>
                   <h4 className="font-bold text-text-primary text-xl tracking-wide">{item.title}</h4>
                   <p className="text-text-secondary mt-2 text-base tracking-wider">{item.desc}</p>
               </motion.div>
@@ -418,8 +298,8 @@ const Presentation: React.FC = () => {
           <h3 className="text-3xl md:text-5xl font-bold text-text-primary mt-2 tracking-wide text-center">Sectors We Serve</h3>
           <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 gap-6 text-center">
             {industryExpertise.map((item, index) => (
-              <motion.div key={item.name} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 + index * 0.08 }} data-hoverable className="group flex flex-col items-center justify-center p-6 bg-surface-2 backdrop-blur-md rounded-lg border border-border hover:border-accent transition-all duration-300 transform hover:-translate-y-2 shadow-xl">
-                <div className="mb-3 w-16 h-16 transition-all duration-300 group-hover:scale-110 text-accent group-hover:drop-shadow-[0_0_8px_rgba(204,164,59,0.6)]">{item.icon}</div>
+              <motion.div key={item.name} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 + index * 0.08 }} className="group flex flex-col items-center justify-center p-6 bg-surface-2 backdrop-blur-md rounded-lg border border-border hover:border-[var(--accent)] transition-all duration-300 transform hover:-translate-y-2 shadow-xl">
+                <div className="mb-3 w-16 h-16 transition-all duration-300 group-hover:scale-110 text-[var(--accent)] group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]">{item.icon}</div>
                 <span className="text-text-primary font-semibold text-base tracking-wide">{item.name}</span>
               </motion.div>
             ))}
@@ -438,8 +318,8 @@ const Presentation: React.FC = () => {
         
                 <div className="mt-8 flex flex-col gap-6">
                     {partnershipProps.map((item, index) => (
-                        <motion.div key={item.title} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }} data-hoverable className="bg-surface-2 backdrop-blur-md border border-border rounded-lg p-5 flex items-center gap-5 transition-all duration-300 hover:border-accent hover:bg-surface-1 shadow-lg">
-                          <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-lg bg-gradient-to-br from-accent/20 to-transparent text-accent">{item.icon}</div>
+                        <motion.div key={item.title} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }} className="bg-surface-2 backdrop-blur-md border border-border rounded-lg p-5 flex items-center gap-5 transition-all duration-300 hover:border-[var(--accent)] hover:bg-surface-1 shadow-lg">
+                          <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-lg bg-gradient-to-br from-accent/20 to-transparent text-[var(--accent)]">{item.icon}</div>
                           <div>
                               <h4 className="font-semibold text-text-primary text-lg tracking-wide">{item.title}</h4>
                               <p className="text-text-secondary text-sm mt-1 tracking-wider">{item.desc}</p>
@@ -465,21 +345,21 @@ const Presentation: React.FC = () => {
               <h3 className="text-3xl md:text-5xl font-bold text-text-primary mt-2 tracking-wide">Client Success: FTSE 100 Technology Transformation</h3>
               <div className="mt-8 flex flex-col gap-6">
                 <div className="flex items-start gap-5">
-                  <div className="flex-shrink-0 w-12 h-12 text-text-secondary"><ChallengeIcon /></div>
+                  <div className="flex-shrink-0 w-12 h-12 text-[var(--accent)]"><ChallengeIcon /></div>
                   <div>
                     <h4 className="font-semibold text-accent text-lg tracking-wide">The Challenge</h4>
                     <p className="text-text-secondary mt-1 tracking-wider">{caseStudy.challenge}</p>
                   </div>
                 </div>
                  <div className="flex items-start gap-5">
-                  <div className="flex-shrink-0 w-12 h-12 text-text-secondary"><SolutionIcon /></div>
+                  <div className="flex-shrink-0 w-12 h-12 text-[var(--accent)]"><SolutionIcon /></div>
                   <div>
                     <h4 className="font-semibold text-accent text-lg tracking-wide">Our Solution</h4>
                     <p className="text-text-secondary mt-1 tracking-wider">{caseStudy.solution}</p>
                   </div>
                 </div>
                  <div className="flex items-start gap-5">
-                  <div className="flex-shrink-0 w-12 h-12 text-text-secondary"><OutcomeIcon /></div>
+                  <div className="flex-shrink-0 w-12 h-12 text-[var(--accent)]"><OutcomeIcon /></div>
                   <div>
                     <h4 className="font-semibold text-accent text-lg tracking-wide">The Outcome</h4>
                     <p className="text-text-secondary mt-1 tracking-wider">{caseStudy.outcome}</p>
@@ -500,19 +380,19 @@ const Presentation: React.FC = () => {
       content: ({ images }: { images: Record<string, string> }) => (
           <div className="relative h-full w-full overflow-hidden">
             <div className="absolute inset-0 bg-cover bg-center animate-ken-burns-out" style={{ backgroundImage: `url('${images.slide10}')` }}></div>
-            <div className="absolute inset-0 dark:bg-black/60 light:bg-background/40"></div>
+            <div className="absolute inset-0 bg-black/60"></div>
             <div className="relative h-full flex flex-col items-center justify-center text-center p-8 z-10">
-              <div className="flex flex-col items-center gap-6 dark:bg-black/20 light:bg-white/40 backdrop-blur-md p-12 rounded-lg border border-border shadow-lg dark:shadow-2xl max-w-4xl">
+              <div className="flex flex-col items-center gap-6 bg-black/20 backdrop-blur-md p-12 rounded-lg border border-border shadow-2xl max-w-4xl">
                 <Logo className="text-3xl" />
                 <h2 className="text-4xl md:text-6xl font-bold mt-6 tracking-wide text-text-primary">Let’s Architect Your Future Leadership</h2>
                 <p className="mt-4 text-lg text-text-secondary tracking-wider max-w-2xl">Partner with RexJagers to build the visionary leadership your organization needs to thrive in the future.</p>
                 <div className="mt-8 flex flex-col md:flex-row items-center gap-4 md:gap-8 text-lg">
-                  <a href="mailto:connect@rexjagers.com" data-hoverable className="flex items-center gap-3 text-text-secondary hover:text-accent transition-colors duration-300">
+                  <a href="mailto:connect@rexjagers.com" className="flex items-center gap-3 text-[var(--accent)] hover:text-[var(--accent-light)] transition-colors duration-300">
                     <EnvelopeIcon />
                     <span className="tracking-wider">connect@rexjagers.com</span>
                   </a>
                   <span className="hidden md:block text-text-primary/20">|</span>
-                  <a href="https://www.rexjagers.com" target="_blank" rel="noopener noreferrer" data-hoverable className="flex items-center gap-3 text-text-secondary hover:text-accent transition-colors duration-300">
+                  <a href="https://www.rexjagers.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-[var(--accent)] hover:text-[var(--accent-light)] transition-colors duration-300">
                     <GlobeIcon />
                     <span className="tracking-wider">www.rexjagers.com</span>
                   </a>
@@ -525,7 +405,7 @@ const Presentation: React.FC = () => {
           </div>
         )
     },
-  ], [navigate, theme]);
+  ], [navigate]);
 
 
   const totalSlides = slideData.length;
@@ -546,77 +426,6 @@ const Presentation: React.FC = () => {
       navigate('/slide/1', { replace: true });
     }
   }, [slideId, totalSlides, navigate]);
-
-  const handleDownloadPDF = async () => {
-    setIsDownloading(true);
-    setDownloadProgress(0);
-    setDownloadMenuOpen(false);
-
-    const doc = new jsPDF({
-      orientation: 'landscape',
-      unit: 'px',
-      format: [1920, 1080],
-    });
-
-    const pdfContainer = document.createElement('div');
-    pdfContainer.style.position = 'absolute';
-    pdfContainer.style.left = '-9999px';
-    pdfContainer.style.width = '1920px';
-    pdfContainer.style.height = '1080px';
-    document.body.appendChild(pdfContainer);
-
-    const base64Images: Record<string, string> = {};
-    for (const key in presentationImages) {
-        base64Images[key] = await imageUrlToBase64(presentationImages[key]);
-    }
-
-    try {
-      for (let i = 0; i < slideData.length; i++) {
-        const slideDef = slideData[i];
-        setDownloadProgress(((i + 1) / slideData.length) * 100);
-
-        const SlideContent = slideDef.content as (props: any) => React.ReactNode;
-        
-        const elementToRender = (
-          <div className={theme}>
-            <div className="w-[1920px] h-[1080px] relative font-sans antialiased text-text-primary bg-background">
-              <AnimatedBackground />
-              <SlideWrapper isContentSlide={i > 0 && i < totalSlides - 1}>
-                <SlideContent images={base64Images} />
-              </SlideWrapper>
-            </div>
-          </div>
-        );
-
-        const root = createRoot(pdfContainer);
-        await new Promise<void>(resolve => {
-          root.render(elementToRender);
-          setTimeout(resolve, 1500);
-        });
-
-        const canvas = await html2canvas(pdfContainer, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: null,
-          width: 1920,
-          height: 1080
-        });
-        
-        root.unmount();
-        
-        if (i > 0) doc.addPage();
-        doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 1920, 1080);
-      }
-      doc.save('RexJagers_Presentation.pdf');
-    } catch (error) {
-      console.error('Failed to generate PDF:', error);
-    } finally {
-      document.body.removeChild(pdfContainer);
-      setIsDownloading(false);
-      setDownloadProgress(0);
-    }
-  };
-
 
   // Fix: Replaced 'aistudio.useCallback' with 'React.useCallback'
   const goTo = React.useCallback((index: number) => {
@@ -665,49 +474,23 @@ const Presentation: React.FC = () => {
   const currentSlideData = slideData[currentSlide];
   if (!currentSlideData) return null;
   
+  const arrowButtonClasses = "absolute top-1/2 -translate-y-1/2 z-50 w-11 h-11 flex items-center justify-center text-[var(--accent)] opacity-80 hover:opacity-100 hover:scale-110 transition-all duration-300 drop-shadow-[0_2px_4px_rgba(var(--accent-rgb),0.3)] hover:drop-shadow-[0_4px_8px_rgba(var(--accent-rgb),0.4)]";
+
   return (
-    <main className="h-screen w-screen font-sans antialiased text-text-primary overflow-hidden transition-colors duration-500">
-      <CustomCursor />
+    <main className="h-screen w-screen font-sans antialiased text-text-primary overflow-hidden">
       <AnimatedBackground />
-      <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
       <Navigation current={currentSlide} total={totalSlides} goTo={goTo} />
       
-      <div className="fixed bottom-6 right-6 z-50">
-        <div className="relative flex flex-col items-center">
-            <AnimatePresence>
-                {downloadMenuOpen && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 10 }} 
-                        animate={{ opacity: 1, y: 0 }} 
-                        exit={{ opacity: 0, y: 10 }}
-                        className="flex flex-col gap-3 mb-3"
-                    >
-                        <button onClick={handleDownloadPDF} data-hoverable className="w-12 h-12 rounded-full flex items-center justify-center bg-surface-2 border border-border text-accent hover:bg-accent hover:text-background transition-colors" title="Download as PDF">
-                            <DownloadIcon />
-                        </button>
-                        <button onClick={() => alert('PPTX Download coming soon!')} data-hoverable className="w-12 h-12 rounded-full flex items-center justify-center bg-surface-2 border border-border text-accent hover:bg-accent hover:text-background transition-colors" title="Download as PPTX">
-                            <PptIcon />
-                        </button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-            <button
-                onClick={() => setDownloadMenuOpen(!downloadMenuOpen)}
-                data-hoverable
-                className="w-14 h-14 rounded-full flex items-center justify-center bg-accent border border-accent/50 text-background shadow-lg hover:scale-105 transition-transform"
-                aria-label="Toggle download menu"
-            >
-                {isDownloading ? <SpinnerIcon /> : <DownloadIcon />}
-            </button>
-            <AnimatePresence>
-                {isDownloading && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute -bottom-6 text-xs text-accent">
-                        {Math.round(downloadProgress)}%
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-      </div>
+      {currentSlide > 0 && (
+        <button onClick={goToPrev} className={`${arrowButtonClasses} left-6`} aria-label="Previous slide">
+          <LeftNavArrowIcon />
+        </button>
+      )}
+      {currentSlide < totalSlides - 1 && (
+        <button onClick={goToNext} className={`${arrowButtonClasses} right-6`} aria-label="Next slide">
+          <RightNavArrowIcon />
+        </button>
+      )}
 
       <AnimatePresence mode="wait">
         <SlideWrapper key={currentSlide} isContentSlide={currentSlide > 0 && currentSlide < totalSlides - 1}>

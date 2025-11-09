@@ -49,10 +49,9 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ title, means, value, d
         rotateY,
         transformStyle: 'preserve-3d',
       }}
-      data-hoverable
-      className="group p-6 rounded-lg border flex flex-col transition-all duration-300 bg-surface-1 backdrop-blur-lg backdrop-saturate-150 border-border hover:border-accent/50 hover:shadow-2xl hover:shadow-accent/10 h-full"
+      className="group p-6 rounded-lg border flex flex-col transition-all duration-300 bg-surface-1 backdrop-blur-lg backdrop-saturate-150 border-border hover:border-[rgba(var(--accent-rgb),0.5)] hover:shadow-2xl hover:shadow-[0_0_30px_rgba(var(--accent-rgb),0.1)] h-full"
     >
-      <div style={{ transform: 'translateZ(50px)' }} className="flex-shrink-0 w-10 h-10 text-accent group-hover:text-accent-light group-hover:scale-110 transition-all duration-300">
+      <div style={{ transform: 'translateZ(50px)' }} className="flex-shrink-0 w-10 h-10 text-[var(--accent)] group-hover:text-[var(--accent-light)] group-hover:scale-110 transition-all duration-300">
           {icon}
       </div>
       

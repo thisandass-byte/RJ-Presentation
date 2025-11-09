@@ -11,7 +11,6 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, toggleTheme }) 
     return (
         <button
             onClick={toggleTheme}
-            data-hoverable
             className="fixed top-6 right-6 z-50 w-12 h-12 rounded-full flex items-center justify-center bg-surface-2 border border-border transition-colors duration-300 focus:outline-none"
             aria-label="Toggle theme"
         >
@@ -21,9 +20,9 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, toggleTheme }) 
                 className="w-6 h-6"
             >
                 {theme === 'dark' ? (
-                    <MoonIcon className="text-accent"/>
+                    <MoonIcon className="text-[var(--accent)]"/>
                 ) : (
-                    <SunIcon className="text-accent"/>
+                    <SunIcon className="text-[var(--accent)]"/>
                 )}
             </motion.div>
         </button>
